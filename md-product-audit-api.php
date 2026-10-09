@@ -1,36 +1,45 @@
 <?php
 /**
- * Plugin Name: Mashhad Daghigh Product Audit API
- * Plugin URI:  https://iranbtm.com
- * Description: Custom REST API Endpoint for auditing products missing featured images or prices.
+ * Plugin Name: WooCommerce Product Audit API
+ * Plugin URI:  https://github.com/maryam-davoodi/wc-product-audit-api
+ * Description: A lightweight custom REST API endpoint for auditing WooCommerce products missing featured images or valid prices.
  * Version:     1.0.0
- * Author:      Maryam Davoodi
- * Text Domain: md-product-audit-api
+ * Author:      Maryam Davoodi nezhad
+ * Text Domain: wc-product-audit-api
  */
 
 if (!defined('ABSPATH')) {
-    exit; // جلوگیری از دسترسی مستقیم به فایل
+    exit; // جلوگیری از دسترسی مستقیم
 }
 
-class MD_Product_Audit_API {
+class WC_Product_Audit_API {
 
     public function __construct() {
         add_action('rest_api_init', array($this, 'register_routes'));
     }
 
+    /**
+     * ثبت Endpointهای REST API
+     */
     public function register_routes() {
-        register_rest_route('mashhad-daghigh/v1', '/audit-products', array(
-            'methods'             => WP_REST_Server::READABLE, // همان GET
+        register_rest_route('wc-audit/v1', '/products', array(
+            'methods'             => WP_REST_Server::READABLE, // GET
             'callback'            => array($this, 'audit_products_callback'),
             'permission_callback' => array($this, 'check_permission'),
         ));
     }
 
+    /**
+     * بررسی سطح دسترسی کاربر
+     */
     public function check_permission() {
-        // برای تست اولیه روی لوکال اگر لاگین نبودید می‌توانید temporary __return_true بگذارید
+        // دسترسی کاربرانی که صلاحیت ویرایش محصول را دارند
         return current_user_can('edit_products') || current_user_can('manage_options');
     }
 
+    /**
+     * کال‌بک اصلی پردازش و استخراج آمار محصولات دارای نقص
+     */
     public function audit_products_callback($request) {
         $type  = $request->get_param('type') ? sanitize_text_field($request->get_param('type')) : 'all_issues';
         $limit = $request->get_param('limit') ? intval($request->get_param('limit')) : 50;
@@ -92,5 +101,5 @@ class MD_Product_Audit_API {
     }
 }
 
-// ساخت نمونه از کلاس پلاگین
-new MD_Product_Audit_API();
+// ساخت نمونه و اجرای کلاس
+new WC_Product_Audit_API();
